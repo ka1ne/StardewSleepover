@@ -4,6 +4,7 @@ using StardewValley;
 using Microsoft.Xna.Framework;
 using StardewValley.Objects;
 using System.Collections.Generic;
+using System.Linq;  // Add this for Contains
 
 namespace StardewSleepover
 {
@@ -100,6 +101,26 @@ namespace StardewSleepover
                 ValidNames = new[] {"SamHouse"} 
             }},
             // Add mappings for each house...
+        };
+
+        private Dictionary<string, string> locationOwners = new Dictionary<string, string>
+        {
+            {"HaleyHouse", "Haley"},
+            {"SamHouse", "Sam"},
+            {"SebastianRoom", "Sebastian"},
+            {"CarpentersHouse", "Robin"},
+            {"ScienceHouse", "Maru"},
+            {"GeorgeHouse", "Alex"},
+            {"ArchaeologyHouse", "Penny"},
+            {"Trailer", "Pam"},
+            {"Manor", "Lewis"},
+            {"LeahHouse", "Leah"},
+            {"ElliottHouse", "Elliott"},
+            {"WizardHouse", "Wizard"},
+            {"HarveyRoom", "Harvey"},
+            {"AnimalShop", "Marnie"},
+            {"Ranch", "Marnie"},
+            {"Saloon", "Gus"}
         };
 
         private string currentHouseOwner = null;
@@ -339,9 +360,25 @@ namespace StardewSleepover
             }
 
             // Check if we've warped into someone's house
-            if (e.NewLocation.Name == "HaleyHouse") currentHouseOwner = "Haley";
-            else if (e.NewLocation.Name == "SamHouse") currentHouseOwner = "Sam";
-            // ... add other house mappings
+            switch (e.NewLocation.Name)
+            {
+                case "HaleyHouse": currentHouseOwner = "Haley"; break;
+                case "SamHouse": currentHouseOwner = "Sam"; break;
+                case "SebastianRoom": currentHouseOwner = "Sebastian"; break;
+                case "CarpentersHouse": currentHouseOwner = "Robin"; break;
+                case "ScienceHouse": currentHouseOwner = "Maru"; break;
+                case "GeorgeHouse": currentHouseOwner = "Alex"; break;
+                case "ArchaeologyHouse": currentHouseOwner = "Penny"; break;
+                case "Trailer": currentHouseOwner = "Pam"; break;
+                case "Manor": currentHouseOwner = "Lewis"; break;
+                case "LeahHouse": currentHouseOwner = "Leah"; break;
+                case "ElliottHouse": currentHouseOwner = "Elliott"; break;
+                case "WizardHouse": currentHouseOwner = "Wizard"; break;
+                case "HarveyRoom": currentHouseOwner = "Harvey"; break;
+                case "AnimalShop":
+                case "Ranch": currentHouseOwner = "Marnie"; break;
+                case "Saloon": currentHouseOwner = "Gus"; break;
+            }
 
             if (currentHouseOwner != null)
             {
