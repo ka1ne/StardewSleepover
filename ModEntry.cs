@@ -11,12 +11,21 @@ namespace StardewSleepover
     {
         private readonly int REQUIRED_HEARTS = 6;
 
-        private Dictionary<string, Rectangle> bedAreas = new Dictionary<string, Rectangle>
+        private class BedInfo
         {
-            // Format: {"LocationName", new Rectangle(x, y, width, height)}
-            {"AnimalShop", new Rectangle(8, 4, 2, 3)},  // Marnie's bed area
-            {"Manor", new Rectangle(8, 5, 2, 3)},       // Lewis's bed area
-            // Add more bed areas...
+            public Rectangle Area { get; set; }
+            public string Owner { get; set; }
+        }
+
+        private Dictionary<string, List<BedInfo>> bedAreas = new Dictionary<string, List<BedInfo>>
+        {
+            {"AnimalShop", new List<BedInfo> {
+                new BedInfo { Area = new Rectangle(12, 4, 2, 3), Owner = "Marnie" },  // Marnie's bed
+                new BedInfo { Area = new Rectangle(23, 3, 3, 3), Owner = "Shane" }    // Shane's bed
+            }},
+            {"Manor", new List<BedInfo> {
+                new BedInfo { Area = new Rectangle(8, 5, 2, 3), Owner = "Lewis" }     // Lewis's bed
+            }}
         };
 
         public override void Entry(IModHelper helper)
@@ -24,6 +33,10 @@ namespace StardewSleepover
             helper.Events.Input.ButtonPressed += OnButtonPressed;
             helper.Events.GameLoop.TimeChanged += OnTimeChanged;
             helper.Events.Display.RenderedWorld += OnRenderedWorld;
+            helper.Events.Input.CursorMoved += OnCursorMoved;  // Add cursor tracking
+            
+            // Register debug commands
+            helper.ConsoleCommands.Add("sleepover_debug", "Shows tile info at cursor position", DebugTileInfo);
         }
 
         private void OnButtonPressed(object sender, ButtonPressedEventArgs e)
@@ -43,13 +56,16 @@ namespace StardewSleepover
             Monitor.Log($"Player at: {playerTile} in {location.Name}", LogLevel.Debug);
 
             // Check if player is in a bed area
-            if (bedAreas.TryGetValue(location.Name, out Rectangle bedArea))
+            if (bedAreas.TryGetValue(location.Name, out List<BedInfo> bedInfos))
             {
-                if (bedArea.Contains((int)playerTile.X, (int)playerTile.Y))
+                foreach (var bedInfo in bedInfos)
                 {
-                    Monitor.Log($"Found bed area in {location.Name}!", LogLevel.Debug);
-                    HandleBedInteraction(location, new Vector2(bedArea.X, bedArea.Y));
-                    return;
+                    if (bedInfo.Area.Contains((int)playerTile.X, (int)playerTile.Y))
+                    {
+                        Monitor.Log($"Found bed area in {location.Name}!", LogLevel.Debug);
+                        HandleBedInteraction(location, new Vector2(bedInfo.Area.X, bedInfo.Area.Y));
+                        return;
+                    }
                 }
             }
         }
@@ -173,32 +189,59 @@ namespace StardewSleepover
                 return;
 
             GameLocation location = Game1.currentLocation;
-            if (bedAreas.TryGetValue(location.Name, out Rectangle bedArea))
+            if (bedAreas.TryGetValue(location.Name, out List<BedInfo> bedInfos))
             {
-                // Convert tile coordinates to screen coordinates
-                Vector2 screenPos = Game1.GlobalToLocal(new Vector2(bedArea.X * 64, bedArea.Y * 64));
-                Rectangle screenRect = new Rectangle(
-                    (int)screenPos.X,
-                    (int)screenPos.Y,
-                    bedArea.Width * 64,
-                    bedArea.Height * 64
-                );
+                foreach (var bedInfo in bedInfos)
+                {
+                    // Convert tile coordinates to screen coordinates
+                    Vector2 screenPos = Game1.GlobalToLocal(new Vector2(bedInfo.Area.X * 64, bedInfo.Area.Y * 64));
+                    Rectangle screenRect = new Rectangle(
+                        (int)screenPos.X,
+                        (int)screenPos.Y,
+                        bedInfo.Area.Width * 64,
+                        bedInfo.Area.Height * 64
+                    );
 
-                // Draw a semi-transparent rectangle around the bed area
-                e.SpriteBatch.Draw(
-                    Game1.staminaRect,  // Using the game's white pixel texture
-                    screenRect,
-                    Color.Red * 0.3f    // Semi-transparent red
-                );
+                    // Draw a semi-transparent rectangle around the bed area
+                    e.SpriteBatch.Draw(
+                        Game1.staminaRect,  // Using the game's white pixel texture
+                        screenRect,
+                        Color.Red * 0.3f    // Semi-transparent red
+                    );
 
-                // Draw the coordinates as text for debugging
-                e.SpriteBatch.DrawString(
-                    Game1.smallFont,
-                    $"Bed Area: {bedArea}",
-                    new Vector2(screenPos.X, screenPos.Y - 20),
-                    Color.Yellow
-                );
+                    // Draw the coordinates as text for debugging
+                    e.SpriteBatch.DrawString(
+                        Game1.smallFont,
+                        $"Bed Area: {bedInfo.Area}",
+                        new Vector2(screenPos.X, screenPos.Y - 20),
+                        Color.Yellow
+                    );
+                }
             }
+        }
+
+        private void OnCursorMoved(object sender, CursorMovedEventArgs e)
+        {
+            if (!Context.IsWorldReady) return;
+
+            // Fix for ICursorPosition error
+            Vector2 cursorPos = new Vector2(e.NewPosition.ScreenPixels.X, e.NewPosition.ScreenPixels.Y);
+            Vector2 tile = cursorPos / 64f;
+            Monitor.Log($"Cursor at tile: ({(int)tile.X}, {(int)tile.Y})", LogLevel.Debug);
+        }
+
+        private void DebugTileInfo(string command, string[] args)
+        {
+            if (!Context.IsWorldReady) return;
+
+            Vector2 cursorTile = Game1.currentCursorTile;
+            // Fix for getTileLocation error
+            Vector2 playerTile = Game1.player.Position / 64f;
+            
+            Monitor.Log($"Debug Info:", LogLevel.Info);
+            Monitor.Log($"Cursor tile: ({(int)cursorTile.X}, {(int)cursorTile.Y})", LogLevel.Info);
+            Monitor.Log($"Player tile: ({(int)playerTile.X}, {(int)playerTile.Y})", LogLevel.Info);
+            Monitor.Log($"Current location: {Game1.currentLocation.Name}", LogLevel.Info);
         }
     }
 }
