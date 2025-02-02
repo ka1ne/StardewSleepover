@@ -44,7 +44,12 @@ While developing, you can:
 4. Try `reload_i18n` in SMAPI console (`~` key)
 5. If changes don't appear, restart the game
 
-Note: Most code changes require a game restart, but some content can be hot reloaded.
+Note: Hot reload capabilities are limited:
+- ✅ Text/translations can be hot reloaded
+- ❌ Code changes (bed coordinates, debug features, etc.) need a game restart
+- ❌ Asset changes need a game restart
+
+Most changes in this mod require a full game restart to take effect, as they involve code-level changes like bed coordinates and warp tracking.
 
 ### Debug Features
 The mod includes several development aids:
