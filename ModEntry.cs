@@ -29,7 +29,7 @@ namespace StardewSleepover
         {
             {"AnimalShop", new List<BedInfo> {
                 new BedInfo { Area = new Rectangle(12, 4, 2, 3), Owner = "Marnie" },  // Marnie's bed
-                new BedInfo { Area = new Rectangle(23, 3, 3, 3), Owner = "Shane" }    // Shane's bed
+                new BedInfo { Area = new Rectangle(25, 4, 3, 1), Owner = "Shane" }    // Shane's bed: around 25-27 X, 4 Y
             }},
             {"Manor", new List<BedInfo> {
                 new BedInfo { Area = new Rectangle(24, 5, 3, 2), Owner = "Lewis" }    // Lewis's bed: 24,5 to 26,6
