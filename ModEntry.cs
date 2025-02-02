@@ -18,6 +18,12 @@ namespace StardewSleepover
             public string SecondaryOwner { get; set; }  // For couples' beds
         }
 
+        private class LocationInfo
+        {
+            public string MapName { get; set; }
+            public string[] ValidNames { get; set; }
+        }
+
         private Dictionary<string, List<BedInfo>> bedAreas = new Dictionary<string, List<BedInfo>>
         {
             {"AnimalShop", new List<BedInfo> {
@@ -83,14 +89,29 @@ namespace StardewSleepover
             }}
         };
 
+        private Dictionary<string, LocationInfo> locationMappings = new Dictionary<string, LocationInfo>
+        {
+            {"HaleyHouse", new LocationInfo { 
+                MapName = "FarmHouse", 
+                ValidNames = new[] {"HaleyHouse"} 
+            }},
+            {"SamHouse", new LocationInfo { 
+                MapName = "FarmHouse", 
+                ValidNames = new[] {"SamHouse"} 
+            }},
+            // Add mappings for each house...
+        };
+
+        private string currentHouseOwner = null;
+
         public override void Entry(IModHelper helper)
         {
             helper.Events.Input.ButtonPressed += OnButtonPressed;
             helper.Events.GameLoop.TimeChanged += OnTimeChanged;
             helper.Events.Display.RenderedWorld += OnRenderedWorld;
-            helper.Events.Input.CursorMoved += OnCursorMoved;  // Add cursor tracking
+            helper.Events.Input.CursorMoved += OnCursorMoved;
+            helper.Events.Player.Warped += OnWarped;  // Add warp tracking
             
-            // Register debug commands
             helper.ConsoleCommands.Add("sleepover_debug", "Shows tile info at cursor position", DebugTileInfo);
         }
 
@@ -211,30 +232,32 @@ namespace StardewSleepover
 
         private string GetBedOwner(GameLocation location)
         {
-            // Map locations to their owners
-            Dictionary<string, string> locationOwners = new Dictionary<string, string>
-            {
-                {"HaleyHouse", "Haley"},
-                {"SamHouse", "Sam"},
-                {"SebastianRoom", "Sebastian"},
-                {"CarpentersHouse", "Robin"},
-                {"ScienceHouse", "Maru"},
-                {"GeorgeHouse", "Alex"},
-                {"ArchaeologyHouse", "Penny"},
-                {"Trailer", "Pam"},
-                {"Manor", "Lewis"},
-                {"LeahHouse", "Leah"},
-                {"ElliottHouse", "Elliott"},
-                {"WizardHouse", "Wizard"},
-                {"HarveyRoom", "Harvey"},
-                {"AnimalShop", "Marnie"},
-                {"Ranch", "Marnie"},
-                {"Saloon", "Gus"}
-            };
+            Monitor.Log($"Checking location: {location.Name}, Map: {location.mapPath.Value}", LogLevel.Debug);
 
-            Monitor.Log($"Checking location: {location.Name}", LogLevel.Debug);
-            if (locationOwners.TryGetValue(location.Name, out string owner))
-                return owner;
+            // Get the base name of the location (strip instance numbers)
+            string baseName = location.Name;
+            while (baseName.Length > 0 && char.IsDigit(baseName[baseName.Length - 1]))
+            {
+                baseName = baseName.Substring(0, baseName.Length - 1);
+            }
+
+            // First try to find a matching location mapping
+            foreach (var mapping in locationMappings)
+            {
+                if (location.mapPath.Value.Contains(mapping.Value.MapName) && 
+                    mapping.Value.ValidNames.Contains(baseName))
+                {
+                    // Found a match, now get the owner
+                    if (locationOwners.TryGetValue(mapping.Key, out string owner))
+                        return owner;
+                }
+            }
+
+            // Fallback to direct location name check
+            if (locationOwners.TryGetValue(location.Name, out string directOwner))
+                return directOwner;
+            if (locationOwners.TryGetValue(baseName, out directOwner))
+                return directOwner;
 
             return null;
         }
@@ -278,12 +301,12 @@ namespace StardewSleepover
 
         private void OnCursorMoved(object sender, CursorMovedEventArgs e)
         {
+            // Remove cursor position spam logging
             if (!Context.IsWorldReady) return;
 
-            // Fix for ICursorPosition error
             Vector2 cursorPos = new Vector2(e.NewPosition.ScreenPixels.X, e.NewPosition.ScreenPixels.Y);
             Vector2 tile = cursorPos / 64f;
-            Monitor.Log($"Cursor at tile: ({(int)tile.X}, {(int)tile.Y})", LogLevel.Debug);
+            // Only log when Debug command is active
         }
 
         private void DebugTileInfo(string command, string[] args)
@@ -298,6 +321,33 @@ namespace StardewSleepover
             Monitor.Log($"Cursor tile: ({(int)cursorTile.X}, {(int)cursorTile.Y})", LogLevel.Info);
             Monitor.Log($"Player tile: ({(int)playerTile.X}, {(int)playerTile.Y})", LogLevel.Info);
             Monitor.Log($"Current location: {Game1.currentLocation.Name}", LogLevel.Info);
+        }
+
+        private void OnWarped(object sender, WarpedEventArgs e)
+        {
+            // Enhanced warp tracking debug info
+            Monitor.Log($"=== WARP EVENT ===", LogLevel.Debug);
+            Monitor.Log($"From: {e.OldLocation.Name} ({e.OldLocation.mapPath.Value})", LogLevel.Debug);
+            Monitor.Log($"To: {e.NewLocation.Name} ({e.NewLocation.mapPath.Value})", LogLevel.Debug);
+            Monitor.Log($"Player Position: ({(int)(Game1.player.Position.X/64)}, {(int)(Game1.player.Position.Y/64)})", LogLevel.Debug);
+            
+            // Reset house owner when leaving a house
+            if (e.OldLocation.Name != e.NewLocation.Name)
+            {
+                Monitor.Log($"Leaving previous location, clearing owner", LogLevel.Debug);
+                currentHouseOwner = null;
+            }
+
+            // Check if we've warped into someone's house
+            if (e.NewLocation.Name == "HaleyHouse") currentHouseOwner = "Haley";
+            else if (e.NewLocation.Name == "SamHouse") currentHouseOwner = "Sam";
+            // ... add other house mappings
+
+            if (currentHouseOwner != null)
+            {
+                Monitor.Log($"House Owner detected: {currentHouseOwner}", LogLevel.Debug);
+            }
+            Monitor.Log($"==================", LogLevel.Debug);
         }
     }
 }
