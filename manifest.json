@@ -1,0 +1,10 @@
+{
+  "Name": "Stardew Sleepover",
+  "Author": "ka1ne",
+  "Version": "1.0.0",
+  "Description": "Sleep in NPCs' beds when you have 6+ hearts with them",
+  "UniqueID": "ka1ne.StardewSleepover",
+  "EntryDll": "StardewSleepover.dll",
+  "MinimumApiVersion": "4.0.0",
+  "UpdateKeys": []
+} 
