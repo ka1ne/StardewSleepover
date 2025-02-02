@@ -15,6 +15,7 @@ namespace StardewSleepover
         {
             public Rectangle Area { get; set; }
             public string Owner { get; set; }
+            public string SecondaryOwner { get; set; }  // For couples' beds
         }
 
         private Dictionary<string, List<BedInfo>> bedAreas = new Dictionary<string, List<BedInfo>>
@@ -24,7 +25,61 @@ namespace StardewSleepover
                 new BedInfo { Area = new Rectangle(23, 3, 3, 3), Owner = "Shane" }    // Shane's bed
             }},
             {"Manor", new List<BedInfo> {
-                new BedInfo { Area = new Rectangle(8, 5, 2, 3), Owner = "Lewis" }     // Lewis's bed
+                new BedInfo { Area = new Rectangle(24, 5, 3, 2), Owner = "Lewis" }    // Lewis's bed: 24,5 to 26,6
+            }},
+            {"LeahHouse", new List<BedInfo> {
+                new BedInfo { Area = new Rectangle(9, 4, 3, 1), Owner = "Leah" }      // Leah's bed: 9,4 to 11,4
+            }},
+            {"SamHouse", new List<BedInfo> {
+                new BedInfo { Area = new Rectangle(24, 7, 3, 2), Owner = "Sam" },     // Sam's bed: 24,7 to 26,8
+                new BedInfo { 
+                    Area = new Rectangle(28, 4, 4, 2), 
+                    Owner = "Jodi",
+                    SecondaryOwner = "Kent"
+                }     // Jodi & Kent's bed: 28,4 to 31,5
+            }},
+            {"SeedShop", new List<BedInfo> {
+                new BedInfo { Area = new Rectangle(1, 5, 2, 2), Owner = "Abigail" },   // Abigail's bed: 1,5 to 2,6
+                new BedInfo { 
+                    Area = new Rectangle(16, 3, 3, 2), 
+                    Owner = "Caroline",
+                    SecondaryOwner = "Pierre"
+                }  // Pierre & Caroline's bed: 16,3 to 18,4
+            }},
+            {"GeorgeHouse", new List<BedInfo> {
+                new BedInfo { Area = new Rectangle(23, 3, 3, 3), Owner = "Alex" },     // Alex's bed: 23,3 to 25,5
+                new BedInfo {
+                    Area = new Rectangle(9, 3, 3, 2),
+                    Owner = "George",
+                    SecondaryOwner = "Evelyn"
+                }      // George & Evelyn's bed
+            }},
+            {"Trailer", new List<BedInfo> {
+                new BedInfo { Area = new Rectangle(8, 10, 3, 3), Owner = "Pam" }      // Pam's bed: 8,10 to 10,12
+            }},
+            {"ElliottHouse", new List<BedInfo> {
+                new BedInfo { Area = new Rectangle(17, 5, 2, 2), Owner = "Elliott" }  // Elliott's bed: 17,5 to 18,6
+            }},
+            {"HaleyHouse", new List<BedInfo> {
+                new BedInfo { Area = new Rectangle(4, 4, 3, 2), Owner = "Haley" },    // Haley's bed: 4,4 to 6,5
+                new BedInfo { Area = new Rectangle(22, 3, 3, 2), Owner = "Emily" }    // Emily's bed: 22,3 to 24,4
+            }},
+            {"Saloon", new List<BedInfo> {
+                new BedInfo { Area = new Rectangle(16, 3, 3, 2), Owner = "Gus" }      // Gus's bed: 16,3 to 18,4
+            }},
+            {"HarveyRoom", new List<BedInfo> {
+                new BedInfo { Area = new Rectangle(15, 5, 3, 2), Owner = "Harvey" }   // Harvey's bed: 15,5 to 17,6
+            }},
+            {"SebastianRoom", new List<BedInfo> {
+                new BedInfo { Area = new Rectangle(16, 8, 3, 3), Owner = "Sebastian" } // Sebastian's bed: 16,8 to 18,10
+            }},
+            {"ScienceHouse", new List<BedInfo> {
+                new BedInfo { 
+                    Area = new Rectangle(13, 3, 4, 2), 
+                    Owner = "Robin",
+                    SecondaryOwner = "Demetrius"
+                },  // Robin & Demetrius's bed: 13,3 to 16,4
+                new BedInfo { Area = new Rectangle(2, 3, 2, 2), Owner = "Maru" }      // Maru's bed: 2,3 to 3,4
             }}
         };
 
@@ -164,7 +219,7 @@ namespace StardewSleepover
                 {"SebastianRoom", "Sebastian"},
                 {"CarpentersHouse", "Robin"},
                 {"ScienceHouse", "Maru"},
-                {"JoshHouse", "Alex"},
+                {"GeorgeHouse", "Alex"},
                 {"ArchaeologyHouse", "Penny"},
                 {"Trailer", "Pam"},
                 {"Manor", "Lewis"},
@@ -173,7 +228,8 @@ namespace StardewSleepover
                 {"WizardHouse", "Wizard"},
                 {"HarveyRoom", "Harvey"},
                 {"AnimalShop", "Marnie"},
-                {"Ranch", "Marnie"}
+                {"Ranch", "Marnie"},
+                {"Saloon", "Gus"}
             };
 
             Monitor.Log($"Checking location: {location.Name}", LogLevel.Debug);
